@@ -194,8 +194,8 @@
 
 <script>
 /* ================= Configuración ================= */
-const CLIENTES_PAIS = 8164000;         // base referencial de clientes eléctricos a nivel nacional
 const REFRESH_MS   = 5 * 60 * 1000;    // recarga de datos cada 5 minutos
+let CLIENTES_PAIS = 8156814;           // fallback; se sobreescribe con el valor real de la API
 const C = getComputedStyle(document.documentElement);
 const COLORES = {
   rojo: C.getPropertyValue('--rojo').trim(),
@@ -234,6 +234,7 @@ async function cargar(){
 
 /* ================= Render general ================= */
 function render(){
+  if (ACTUAL.clientes_pais) CLIENTES_PAIS = ACTUAL.clientes_pais;
   const f = new Date(ACTUAL.actualizado_utc);
   $('hora-act').textContent = f.toLocaleString('es-CL',
     {timeZone:'America/Santiago', day:'2-digit', month:'2-digit', year:'numeric',
@@ -248,7 +249,7 @@ function render(){
 
 function comunasFiltradas(){
   return Object.entries(ACTUAL.comunas).filter(([k,c])=>{
-    if (filtroRegion && String(c.id_region) !== filtroRegion) return false;
+    if (filtroRegion && c.region_key !== filtroRegion) return false;
     if (filtroComuna && k !== filtroComuna) return false;
     return true;
   });
@@ -274,7 +275,7 @@ function poblarFiltros(){
   selR.value = prevR;
 
   const coms = Object.entries(ACTUAL.comunas)
-    .filter(([,c])=>!filtroRegion || String(c.id_region)===filtroRegion)
+    .filter(([,c])=>!filtroRegion || c.region_key===filtroRegion)
     .sort((a,b)=>a[1].comuna.localeCompare(b[1].comuna,'es'));
   const prevC = selC.value;
   selC.innerHTML = '<option value="">Todas las comunas</option>' +
