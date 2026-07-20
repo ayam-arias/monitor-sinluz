@@ -2,15 +2,11 @@ name: Actualizar datos SEC
 
 on:
   schedule:
-    - cron: "12 * * * *"   # cada hora, minuto 12 (UTC)
-  workflow_dispatch:        # permite ejecución manual desde la pestaña Actions
+    - cron: "12 * * * *"
+  workflow_dispatch:
 
 permissions:
   contents: write
-
-concurrency:
-  group: actualizar-datos
-  cancel-in-progress: false
 
 jobs:
   actualizar:
@@ -24,18 +20,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Consultar API SEC y regenerar datos
+      - name: Consultar API SEC
         run: python scripts/actualizar_datos.py
 
-      - name: Commit y push si hay cambios
+      - name: Commit y push
         run: |
           git config user.name "monitor-bot"
           git config user.email "actions@github.com"
           git add data/
           if ! git diff --cached --quiet; then
-            git commit -m "datos: actualización automática $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git commit -m "datos: actualizacion automatica"
             git pull --rebase origin main
             git push
-          else
-            echo "Sin cambios en los datos."
           fi
