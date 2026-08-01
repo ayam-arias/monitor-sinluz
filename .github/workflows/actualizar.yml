@@ -1,4 +1,4 @@
-ame: Actualizar datos SEC
+name: Actualizar datos SEC
 
 on:
   schedule:
