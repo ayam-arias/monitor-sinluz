@@ -1,35 +1,53 @@
-name: Actualizar datos SEC
+ame: Actualizar datos SEC
 
 on:
   schedule:
     - cron: "12 * * * *"
   workflow_dispatch:
+    inputs:
+      strict:
+        description: "Fallar el job si la API SEC no responde"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
+concurrency:
+  group: actualizar-sec
+  cancel-in-progress: false
+
 jobs:
   actualizar:
     runs-on: ubuntu-latest
+    timeout-minutes: 6
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Configurar Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Consultar API SEC
+        env:
+          # Secret opcional: URL del relay (Cloudflare Worker o Apps Script).
+          # Si no existe, se consulta apps.sec.cl directamente.
+          SEC_BASE: ${{ secrets.SEC_BASE || 'https://apps.sec.cl' }}
+          SEC_RELAY_TOKEN: ${{ secrets.SEC_RELAY_TOKEN }}
+          STRICT: ${{ inputs.strict || 'false' }}
         run: python scripts/actualizar_datos.py
 
       - name: Commit y push
         run: |
+          if [ -z "$(git status --porcelain data/)" ]; then
+            echo "Sin cambios en data/ — no se genera commit."
+            exit 0
+          fi
           git config user.name "monitor-bot"
           git config user.email "actions@github.com"
           git add data/
-          if ! git diff --cached --quiet; then
-            git commit -m "datos: actualizacion automatica"
-            git pull --rebase origin main
-            git push
-          fi
+          git commit -m "datos: actualizacion automatica $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
