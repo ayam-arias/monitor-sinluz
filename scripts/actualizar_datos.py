@@ -39,8 +39,8 @@ except Exception:  # fallback defensivo
 SEC_BASE = os.environ.get("SEC_BASE", "https://apps.sec.cl").rstrip("/")
 RELAY_TOKEN = os.environ.get("SEC_RELAY_TOKEN", "")
 STRICT = os.environ.get("STRICT", "false").lower() == "true"
-TIMEOUT = int(os.environ.get("SEC_TIMEOUT", "20"))
-REINTENTOS = int(os.environ.get("SEC_REINTENTOS", "3"))
+TIMEOUT = int(os.environ.get("SEC_TIMEOUT", "45"))
+REINTENTOS = int(os.environ.get("SEC_REINTENTOS", "4"))
 
 RUTA_POR_FECHA = "/INTONLINEv1/ClientesAfectados/GetPorFecha"
 RUTA_NACIONAL = "/INTONLINEv1/ClientesAfectados/GetClientesNacional"
